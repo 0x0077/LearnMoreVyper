@@ -1,5 +1,4 @@
-# LearnMoreVyper
-## 使用Vyper记录自己的区块链旅途
+# Vyper Blockchain
 ### UniswapData合约说明
 使用Vyper编写，目前已实现：
 
@@ -12,3 +11,6 @@
 4.获取最新交易对的流动性
 
 5.获取最新交易对的最佳兑换价格
+
+### Swap合约说明
+1. Dex刷单交易
