@@ -1,7 +1,7 @@
-# @version >=0.3
+# @version 0.3.7
 """
-@title zkApe Decentralization Exchange V1 Factory
-@author zkApe
+@title ApeX Exchange V1 Factory
+@author 0x0077
 """
 
 
@@ -199,7 +199,7 @@ def _transferERC20(_token1: address, _sender: address, _spender: address, _amoun
             concat(
                 method_id("approve(address,uint256)"),
                 convert(self, bytes32),
-                convert(MAX_UINT256, bytes32)
+                convert(max_value(uint256), bytes32)
             ),
             max_outsize=32
         )
@@ -302,8 +302,8 @@ def _createPairERC721(
             assert returnOwner == _owner, "APEX:: FORK OWNER"
 
 
-    _newPairAddress: address = create_forwarder_to(self.apeXPair)
-    assert _newPairAddress != ZERO_ADDRESS, "APEX:: UNVALID CREATE"
+    _newPairAddress: address = create_minimal_proxy_to(self.apeXPair)
+    assert _newPairAddress != empty(address), "APEX:: UNVALID CREATE"
 
     _transferSuccessful: bool = self._transferERC721NFT(_token0, _owner, _newPairAddress, _tokenIds)
     assert _transferSuccessful, "APEX:: UNVALID TRANSFER"
@@ -338,7 +338,7 @@ def createPairETHForERC721(
     @dev Create an 'ERC721/NFT' pool
     """
 
-    assert _token0 != ZERO_ADDRESS and msg.sender != ZERO_ADDRESS, "APEX:: UNVALID ADDRESS"
+    assert _token0 != empty(address) and msg.sender != empty(address), "APEX:: UNVALID ADDRESS"
     assert len(_tokenIds) <= MAX_SIZE, "APEX:: EXCESS INPUT"
     assert _riseCurve <= (_price * 90 / 100), "APEX:: UNVALID RISE CURVE"
     assert _riseType in RISE_TYPE, "APEX:: UNVALID TYPE"
@@ -355,7 +355,7 @@ def createPairETHForERC721(
         _depositValue += (_depositValue * _fee / 1000)
         assert _depositValue == msg.value and _price != 0, "APEX:: INSUFFICIENT BALANCE"
 
-    _newPairAddress: address = ZERO_ADDRESS
+    _newPairAddress: address = empty(address)
     _successful: bool = False
     _newPairAddress, _successful = self._createPairERC721(
         msg.sender,
@@ -379,7 +379,7 @@ def createPairETHForERC721(
             convert(self, bytes32),
             convert(msg.sender, bytes32),
             convert(_token0, bytes32),
-            convert(ZERO_ADDRESS, bytes32),
+            convert(empty(address), bytes32),
             convert(True, bytes32)
         ),
         value=msg.value
@@ -389,7 +389,7 @@ def createPairETHForERC721(
         _pairType,
         self.allPairLength, 
         _token0, 
-        ZERO_ADDRESS, 
+        empty(address), 
         _newPairAddress, 
         _riseType, 
         _riseCurve, 
@@ -410,7 +410,7 @@ def createPairETH(
     _riseType: uint256,
     _riseCurve: uint256,
     _numberItems: uint256) -> address:
-    assert _token0 != ZERO_ADDRESS and msg.sender != ZERO_ADDRESS, "APEX:: UNVALID ADDRESS"
+    assert _token0 != empty(address) and msg.sender != empty(address), "APEX:: UNVALID ADDRESS"
     assert _price != 0, "APEX:: ENTER UNVALID AMOUNT"
     assert _riseType in RISE_TYPE, "APEX:: UNVALID TYPE"
     assert _pairType in PAIR_TYPE, "APEX:: UNVALID PAIR TRADE TYPE"
@@ -418,7 +418,7 @@ def createPairETH(
     assert _riseCurve <= (_price * 90 / 100), "APEX:: UNVALID RISE CURVE"
 
     _newPairAddress: address = create_forwarder_to(self.apeXPair)
-    assert _newPairAddress != ZERO_ADDRESS, "APEX:: UNVALID CREATE"
+    assert _newPairAddress != empty(address), "APEX:: UNVALID CREATE"
 
     writed: bool = self._writePairStruct(
         msg.sender,
@@ -441,7 +441,7 @@ def createPairETH(
             convert(self, bytes32),
             convert(msg.sender, bytes32),
             convert(_token0, bytes32),
-            convert(ZERO_ADDRESS, bytes32),
+            convert(empty(address), bytes32),
             convert(False, bytes32)
         ),
         value=msg.value
@@ -451,7 +451,7 @@ def createPairETH(
         _pairType,
         self.allPairLength, 
         _token0, 
-        ZERO_ADDRESS, 
+        empty(address), 
         _newPairAddress, 
         _riseType, 
         _riseCurve, 
@@ -473,14 +473,14 @@ def createPairERC721NFT(
     _numberItems: uint256,
     _tokenIds: DynArray[uint256, MAX_SIZE]) -> address:
 
-    assert _token0 != ZERO_ADDRESS and msg.sender != ZERO_ADDRESS, "APEX:: UNVALID ADDRESS"
+    assert _token0 != empty(address) and msg.sender != empty(address), "APEX:: UNVALID ADDRESS"
     assert _price != 0, "APEX:: ENTER UNVALID AMOUNT"
     assert _riseType in RISE_TYPE, "APEX:: UNVALID TYPE"
     assert _pairType in PAIR_TYPE, "APEX:: UNVALID PAIR TRADE TYPE"
     assert _riseCurve <= (_price * 90 / 100), "APEX:: UNVALID RISE CURVE"
     assert _numberItems == len(_tokenIds), "APEX:: UNVALID TOKEN ID"
 
-    _newPairAddress: address = ZERO_ADDRESS
+    _newPairAddress: address = empty(address)
     _successful: bool = False
 
     _newPairAddress, _successful = self._createPairERC721(
@@ -496,14 +496,14 @@ def createPairERC721NFT(
     )
     assert _successful, "APEX:: UNVALID CALL"
 
-    _setupSuccessful: bool = self._pairSetup(_pairType, _newPairAddress, _token0, ZERO_ADDRESS, msg.sender, False)
+    _setupSuccessful: bool = self._pairSetup(_pairType, _newPairAddress, _token0, empty(address), msg.sender, False)
     assert _setupSuccessful, "APEX:: UNVALID CALL"
 
     log PairCreated(
         _pairType,
         self.allPairLength, 
         _token0, 
-        ZERO_ADDRESS, 
+        empty(address), 
         _newPairAddress, 
         _riseType, 
         _riseCurve, 
@@ -527,7 +527,7 @@ def createPairERC20ForERC721(
     _amountIn: uint256,
     _numberItems: uint256,
     _tokenIds: DynArray[uint256, MAX_SIZE]) -> address:
-    assert _token0 != ZERO_ADDRESS and _token1 != ZERO_ADDRESS and msg.sender != ZERO_ADDRESS, "APEX:: UNVALID ADDRESS"
+    assert _token0 != empty(address) and _token1 != empty(address) and msg.sender != empty(address), "APEX:: UNVALID ADDRESS"
     assert _riseType in RISE_TYPE, "APEX:: UNVALID TYPE"
     assert _pairType in PAIR_TYPE, "APEX:: UNVALID PAIR TRADE TYPE"
     assert _riseCurve <= (_price * 90 / 100), "APEX:: UNVALID RISE CURVE"
@@ -544,7 +544,7 @@ def createPairERC20ForERC721(
         _newCurrentPrice, _depositValue, _protocolFee = ApeXExchangeV1Libray(_library).getInputValue(_riseType, _pair, _numberItems, _price, _riseCurve, _fee)
         assert _depositValue == _amountIn and _price != 0, "APEX:: INSUFFICIENT BALANCE"
 
-    _newPairAddress: address = ZERO_ADDRESS
+    _newPairAddress: address = empty(address)
     _successful: bool = False
     _newPairAddress, _successful = self._createPairERC721(
         msg.sender,
@@ -590,7 +590,7 @@ def createPairERC20(
     _riseType: uint256,
     _riseCurve: uint256,
     _amountIn: uint256):
-    assert _token0 != ZERO_ADDRESS and _token1 != ZERO_ADDRESS and msg.sender != ZERO_ADDRESS, "APEX:: UNVALID ADDRESS"
+    assert _token0 != empty(address) and _token1 != empty(address) and msg.sender != empty(address), "APEX:: UNVALID ADDRESS"
     assert _price != 0, "APEX:: UNVALID ZERO PRICE"
     assert _riseType in RISE_TYPE, "APEX:: UNVALID RISE TYPE"
     assert _amountIn != 0, "APEX:: UNVALID ERC20 AMOUNT"
@@ -639,8 +639,3 @@ def updateLibrary(_newLibrary: address):
     self.apeXLibray = _newLibrary
     log SetNewLibrary(msg.sender, oldLibrary, _newLibrary)
 
-
-@view
-@external
-def getB(addr: address) -> uint256:
-    return addr.balance
