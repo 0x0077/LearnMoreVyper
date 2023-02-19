@@ -27,7 +27,6 @@ interface IERC721Enumerable:
     def tokenByIndex(index: uint256) -> uint256: view
     def supportsInterface(interfaceId: bytes4) -> bool: view
 
-
 interface ApeXExchangeV1Pair:
     def setup(
         _router: address, 
