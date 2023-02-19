@@ -1,7 +1,7 @@
-# @version >=0.3
+# @version 0.3.7
 """
-@title zkApe Decentralization Exchange V1 Library
-@author zkApe
+@title ApeX Exchange V1 Library
+@author 0x0077
 """
 
 from vyper.interfaces import ERC20
@@ -54,7 +54,7 @@ router: public(address)
 @external
 def __init__():
     self.owner = msg.sender
-    self.router = ZERO_ADDRESS
+    self.router = empty(address)
 
 
 @external
@@ -78,13 +78,10 @@ def _linearRiseBuyInfo(
     _apeFee: uint256) -> (uint256, uint256, uint256):
     assert _numberItems != 0, "APEX:: UNVALID ITEMS"
 
-    # 购买完所有的NFT后的价格
     _newCurrentPrice: uint256 = _currentPrice + _numberItems * _riseCurve
-    assert _newCurrentPrice <= MAX_UINT256, "APEX:: UNVALID PRICE"
+    assert _newCurrentPrice <= max_value(uint256), "APEX:: UNVALID PRICE"
 
-    # 购买所有的NFT需要花费多少ETH
     _inputValue: uint256 = _numberItems * _currentPrice + (_numberItems * (_numberItems - 1) * _riseCurve) / 2
-    # 避免机器人套利 向上加一个单位
     _inputValue += _riseCurve
 
     if ApeXExchangeV1Pair(_pair).is_trade():
@@ -114,18 +111,16 @@ def _linearRiseSellInfo(
 
     if _priceChange > _currentPrice:
         _newCurrentPrice = 0
-        # 当价格为0时需要卖出多少个NFT
+
         _newNumItems = _currentPrice / _riseCurve + 1
     else:
         _newCurrentPrice = _currentPrice - _priceChange
     
     _outputValue: uint256 = _newNumItems * _currentPrice - (_newNumItems * (_newNumItems - 1) * _riseCurve) / 2
 
-    # 避免机器人套利 向下减一个单位
     _outputValue -= _riseCurve
 
     if ApeXExchangeV1Pair(_pair).is_trade():
-        # 仅适用于双向流动池
         _addSwapFee: uint256 = _outputValue * _swapFee / 1000
         _outputValue -= _addSwapFee
 
@@ -146,8 +141,6 @@ def _exponentialRiseBuyInfo(
     _apeFee: uint256) -> (uint256, uint256, uint256):
     assert _numberItems != 0 and _numberItems <= 15, "APEX:: UNVALID ITEMS"
 
-    # 购买所有的NFT需要花费多少ETH
-    # 最多计算购买30个总金额
     _newCurrentPrice: uint256 = _currentPrice
     _inputValue: uint256 = 0
     _t: uint256 = 0
@@ -160,9 +153,8 @@ def _exponentialRiseBuyInfo(
             _newCurrentPrice = _t
             _inputValue += _t
     
-    assert _newCurrentPrice <= MAX_UINT256, "APEX:: UNVALID PRICE"
+    assert _newCurrentPrice <= max_value(uint256), "APEX:: UNVALID PRICE"
 
-    # 避免机器人套利 往上加一个点位
     _inputValue += ((_newCurrentPrice * _riseCurve) / 10 ** 18)
 
     if ApeXExchangeV1Pair(_pair).is_trade():
@@ -200,7 +192,6 @@ def _exponentialRiseSellInfo(
     
     assert _newCurrentPrice > 0, "APEX:: UNVALID PRICE"
 
-    # 避免机器人套利 往下减一个点位
     _outputValue -= ((_newCurrentPrice * _riseCurve) / 10 ** 18)
 
     if ApeXExchangeV1Pair(_pair).is_trade():
