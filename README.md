@@ -1,19 +1,19 @@
-# Vyper Blockchain
-### UniswapData合约说明
-使用Vyper编写，目前已实现：
+#Vyper Blockchain
+### UniswapData contract description
+Written using Vyper, currently implemented:
 
-1.Uniswap交易
+1. Uniswap trading
 
-2.获取Uniswap最新交易对
+2. Obtain the latest trading pairs of Uniswap
 
-3.获取最新交易对的Token信息(名称，合约地址等)
+3. Obtain the Token information of the latest transaction pair (name, contract address, etc.)
 
-4.获取最新交易对的流动性
+4. Obtain the liquidity of the latest trading pairs
 
-5.获取最新交易对的最佳兑换价格
+5. Obtain the best exchange price of the latest trading pair
 
-### Swap合约说明
-1.Dex 刷单交易
+### Swap contract description
+1. Dex brush order transaction
 
-### NFT交易市场说明
-1.实现简单购买/出售NFT市场功能
+### NFT Trading Market Description
+1. Realize the simple purchase/sell NFT market function
