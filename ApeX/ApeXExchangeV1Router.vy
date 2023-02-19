@@ -1,7 +1,7 @@
-# @version >=0.3
+# @version 0.3.7
 """
-@title zkApe Decentralization Exchange V1 Router
-@author zkApe
+@title ApeX Exchange V1 Router
+@author 0x0077
 """
 
 from vyper.interfaces import ERC20
@@ -178,7 +178,7 @@ b: public(address)
 @external
 def __init__(_fee: uint256, _library: address):
     self.owner = msg.sender
-    self.factory = ZERO_ADDRESS
+    self.factory = empty(address)
     self.apeFee = _fee
     self.apeFund = msg.sender
     self.library = _library
@@ -219,7 +219,7 @@ def _safeTransferERC20Token(_tokenAddress: address, _sender: address, _recipient
             concat(
                 method_id("approve(address,uint256)"),
                 convert(self, bytes32),
-                convert(MAX_UINT256, bytes32)
+                convert(max_value(uint256), bytes32)
             ),
             max_outsize=32
         )
@@ -366,7 +366,7 @@ def apeAggregatorSwapETHForERC721(
     _tokenIds: DynArray[uint256, MAX_SIZE],
     _deadline: uint256):
 
-    assert _nftAddress != ZERO_ADDRESS and _nftRecipient != ZERO_ADDRESS, "APEX:: UNVALID ADDRESS"
+    assert _nftAddress != empty(address) and _nftRecipient != empty(address), "APEX:: UNVALID ADDRESS"
     assert len(_tokenIds) != 0, "APEX:: UNVALID ITEMS"
     assert self.checkDeadline(_deadline), "APEX:: DEADLINE PASSED"
     assert msg.value == _inputAmount, "APEX:: INSUFFICIENT BALANCE"
@@ -440,7 +440,7 @@ def swapETHForERC721(
     _nftRecipient: address,
     _tokenIds: DynArray[uint256, MAX_SIZE],
     _deadline: uint256) -> bool:
-    assert msg.sender != ZERO_ADDRESS and _pair != ZERO_ADDRESS and _nftRecipient != ZERO_ADDRESS, "APEX:: UNVALIE ADDRESS"
+    assert msg.sender != empty(address) and _pair != empty(address) and _nftRecipient != empty(address), "APEX:: UNVALIE ADDRESS"
     assert len(_tokenIds) != 0, "APEX:: UNVALID ITEMS"
     assert ApeXExchangeV1Pair(_pair).pairType() != 1, "APEX:: PAIR TRADE TYPE"
     assert self.checkDeadline(_deadline), "APEX:: DEADLINE PASSED"
@@ -492,7 +492,7 @@ def swapERC721ForETH(
     _ethRecipient: address, 
     _tokenIds: DynArray[uint256, MAX_SIZE],
     _deadline: uint256) -> bool:
-    assert msg.sender != ZERO_ADDRESS and _ethRecipient != ZERO_ADDRESS and _pair != ZERO_ADDRESS and _nftAddress != ZERO_ADDRESS, "APEX:: UNVALIE ADDRESS"
+    assert msg.sender != empty(address) and _ethRecipient != empty(address) and _pair != empty(address) and _nftAddress != empty(address), "APEX:: UNVALIE ADDRESS"
     assert len(_tokenIds) != 0, "APEX:: UNVALID ITEMS"
     assert ApeXExchangeV1Pair(_pair).pairType() != 2, "APEX:: PAIR TRADE TYPE"
     assert self.checkDeadline(_deadline), "APEX:: DEADLINE PASSED"
@@ -531,7 +531,7 @@ def swapERC20TokenForERC721(
     '''
     @dev Deflationary tokens are not supported
     '''
-    assert msg.sender != ZERO_ADDRESS and _pair != ZERO_ADDRESS, "APEX:: UNVALIE ADDRESS"
+    assert msg.sender != empty(address) and _pair != empty(address), "APEX:: UNVALIE ADDRESS"
     assert len(_tokenIds) != 0, "APEX:: UNVALID ITEMS"
     assert self.checkDeadline(_deadline), "APEX:: DEADLINE PASSED"
 
@@ -553,7 +553,7 @@ def swapERC721ForERC20Token(
     '''
     @dev Deflationary tokens are not supported
     '''
-    assert msg.sender != ZERO_ADDRESS and _pair != ZERO_ADDRESS, "APEX:: UNVALIE ADDRESS"
+    assert msg.sender != empty(address) and _pair != empty(address), "APEX:: UNVALIE ADDRESS"
     assert len(_tokenIds) != 0, "APEX:: UNVALID ITEMS"
     assert self.checkDeadline(_deadline), "APEX:: DEADLINE PASSED"
 
@@ -575,7 +575,7 @@ def addLiquidity(
     _inputAmount: uint256, 
     _tokenIds: DynArray[uint256, MAX_SIZE],
     _deadline: uint256) -> bool:
-    assert _nftAddress != ZERO_ADDRESS and _from != ZERO_ADDRESS and _to != ZERO_ADDRESS and msg.sender != ZERO_ADDRESS,"APEX:: UNVALID PAIR"
+    assert _nftAddress != empty(address) and _from != empty(address) and _to != empty(address) and msg.sender != empty(address),"APEX:: UNVALID PAIR"
     assert ApeXExchangeV1Pair(_to).pairType() == 0, "APEX:: PAIR TRADE TYPE"
     assert len(_tokenIds) != 0, "APEX:: UNVALID TOKEN ID"
     assert self.checkDeadline(_deadline), "APEX:: DEADLINE PASSED"
@@ -607,7 +607,7 @@ def addLiquidityEN(
     _inputAmount: uint256, 
     _tokenIds: DynArray[uint256, MAX_SIZE],
     _deadline: uint256) -> bool:
-    assert _to != ZERO_ADDRESS and _nftAddress != ZERO_ADDRESS and _tokenAddress != ZERO_ADDRESS and _from != ZERO_ADDRESS and msg.sender != ZERO_ADDRESS,"APEX:: UNVALID PAIR"
+    assert _to != empty(address) and _nftAddress != empty(address) and _tokenAddress != empty(address) and _from != empty(address) and msg.sender != empty(address),"APEX:: UNVALID PAIR"
     assert ApeXExchangeV1Pair(_to).pairType() == 0, "APEX:: PAIR TRADE TYPE"
     assert len(_tokenIds) != 0, "APEX:: UNVALID TOKEN ID"
     assert self.checkDeadline(_deadline), "APEX:: DEADLINE PASSED"
@@ -642,7 +642,7 @@ def addLiquidityETH(
     _to: address,
     _inputAmount: uint256,
     _deadline: uint256) -> bool:
-    assert _from != ZERO_ADDRESS and _to != ZERO_ADDRESS and msg.sender != ZERO_ADDRESS,"APEX:: UNVALID PAIR"
+    assert _from != empty(address) and _to != empty(address) and msg.sender != empty(address),"APEX:: UNVALID PAIR"
     assert ApeXExchangeV1Pair(_to).pairType() == 1, "APEX:: PAIR TRADE TYPE"
     assert self.checkDeadline(_deadline), "APEX:: DEADLINE PASSED"
 
@@ -662,7 +662,7 @@ def addLiquidityERC20(
     _to: address,
     _inputAmount: uint256,
     _deadline: uint256) -> bool:
-    assert _from != ZERO_ADDRESS and _to != ZERO_ADDRESS and msg.sender != ZERO_ADDRESS,"APEX:: UNVALID PAIR"
+    assert _from != empty(address) and _to != empty(address) and msg.sender != empty(address),"APEX:: UNVALID PAIR"
     assert _inputAmount != 0,"APEX:: UNVALID AMOUNT"
     assert self.checkDeadline(_deadline), "APEX:: DEADLINE PASSED"
 
@@ -689,7 +689,7 @@ def addLiquidityERC721NFT(
     _to: address,
     _tokenIds: DynArray[uint256, MAX_SIZE],
     _deadline: uint256) -> bool:
-    assert _from != ZERO_ADDRESS and _to != ZERO_ADDRESS and msg.sender != ZERO_ADDRESS and _nftAddress != ZERO_ADDRESS,"APEX:: UNVALID ADDRESS"
+    assert _from != empty(address) and _to != empty(address) and msg.sender != empty(address) and _nftAddress != empty(address),"APEX:: UNVALID ADDRESS"
     assert len(_tokenIds) != 0, "APEX:: UNVALID TOKEN ID"
     assert ApeXExchangeV1Pair(_to).pairType() == 2, "APEX:: PAIR TRADE TYPE"
     assert self.checkDeadline(_deadline), "APEX:: DEADLINE PASSED"
@@ -717,7 +717,7 @@ def removeLiquidity(
     _inputAmount: uint256, 
     _tokenIds: DynArray[uint256, MAX_SIZE],
     _deadline: uint256) -> bool:
-    assert _pair != ZERO_ADDRESS,"APEX:: UNVALID PAIR"
+    assert _pair != empty(address),"APEX:: UNVALID PAIR"
     assert _inputAmount != 0, "APEX:: UNVALID AMOUNT R"
     assert len(_tokenIds) != 0, "APEX:: UNVALID TOKEN ID"
     assert self.checkDeadline(_deadline), "APEX:: DEADLINE PASSED"
@@ -759,7 +759,7 @@ def removeLiquidityEN(
     _inputAmount: uint256, 
     _tokenIds: DynArray[uint256, MAX_SIZE],
     _deadline: uint256) -> bool:
-    assert _pair != ZERO_ADDRESS and _nftAddress != ZERO_ADDRESS and _tokenAddress != ZERO_ADDRESS and _tokenRecipient != ZERO_ADDRESS and msg.sender != ZERO_ADDRESS,"APEX:: UNVALID PAIR"
+    assert _pair != empty(address) and _nftAddress != empty(address) and _tokenAddress != empty(address) and _tokenRecipient != empty(address) and msg.sender != empty(address),"APEX:: UNVALID PAIR"
     assert _inputAmount != 0, "APEX:: UNVALID AMOUNT"
     assert len(_tokenIds) != 0, "APEX:: UNVALID TOKEN ID"
     assert self.checkDeadline(_deadline), "APEX:: DEADLINE PASSED"
@@ -798,7 +798,7 @@ def removeLiquidityETH(
     _ethRecipient: address,
     _inputAmount: uint256,
     _deadline: uint256) -> bool:
-    assert _pair != ZERO_ADDRESS and _ethRecipient != ZERO_ADDRESS,"APEX:: UNVALID PAIR"
+    assert _pair != empty(address) and _ethRecipient != empty(address),"APEX:: UNVALID PAIR"
     assert _inputAmount != 0, "APEX:: UNVALID AMOUNT"
     assert self.checkDeadline(_deadline), "APEX:: DEADLINE PASSED"
 
@@ -824,7 +824,7 @@ def removeLiquidityERC20(
     _tokenRecipient: address,
     _inputAmount: uint256,
     _deadline: uint256) -> bool:
-    assert _pair != ZERO_ADDRESS and _tokenRecipient != ZERO_ADDRESS and msg.sender != ZERO_ADDRESS,"APEX:: UNVALID ADDRESS"
+    assert _pair != empty(address) and _tokenRecipient != empty(address) and msg.sender != empty(address),"APEX:: UNVALID ADDRESS"
     assert _inputAmount != 0, "APEX:: UNVALID AMOUNT"
     assert self.checkDeadline(_deadline), "APEX:: DEADLINE PASSED"
 
@@ -851,7 +851,7 @@ def removeLiquidityERC721NFT(
     _nftRecipient: address,
     _tokenIds: DynArray[uint256, MAX_SIZE],
     _deadline: uint256) -> bool:
-    assert _pair != ZERO_ADDRESS and _nftAddress != ZERO_ADDRESS and msg.sender != ZERO_ADDRESS and _nftRecipient != ZERO_ADDRESS,"APEX:: UNVALID ADDRESS"
+    assert _pair != empty(address) and _nftAddress != empty(address) and msg.sender != empty(address) and _nftRecipient != empty(address),"APEX:: UNVALID ADDRESS"
     assert len(_tokenIds) != 0, "APEX:: UNVALID TOKEN ID"
     assert self.checkDeadline(_deadline), "APEX:: DEADLINE PASSED"
 
