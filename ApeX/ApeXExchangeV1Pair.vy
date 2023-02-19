@@ -1,7 +1,7 @@
-# @version >=0.3
+# @version 0.3.7
 """
-@title zkApe Decentralization Exchange V1 Pair
-@author zkApe
+@title ApeX Exchange V1 Pair
+@author 0x0077
 """
 
 
@@ -162,7 +162,7 @@ def __init__():
 def getReserves() -> (uint256, uint256, uint256):
     token0Reserve: uint256 = IERC721Metadata(self.token0).balanceOf(self)
     token1Reserve: uint256 = 0
-    if self.token1 == ZERO_ADDRESS:
+    if self.token1 == empty(address):
         token1Reserve = self.balance
     else:
         token1Reserve = IERC20Metadata(self.token1).balanceOf(self)
@@ -221,7 +221,7 @@ def _safeTransferERC20Token(_sender: address, _recipient: address, _amountIn: ui
             concat(
                 method_id("approve(address,uint256)"),
                 convert(_seaRouter, bytes32),
-                convert(MAX_UINT256, bytes32)
+                convert(max_value(uint256), bytes32)
             ),
             max_outsize=32
         )
@@ -245,8 +245,8 @@ def _safeTransferERC20Token(_sender: address, _recipient: address, _amountIn: ui
 @external
 @nonreentrant('lock')
 def safeTransferETH(_recipient: address, _apeFeeFund: address, _amountIn: uint256, _newCurrentPrice: uint256):
-    assert msg.sender != ZERO_ADDRESS and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER"
-    assert _recipient != ZERO_ADDRESS, "APEX:: CAN ONLY BE A VALID ADDRESS"
+    assert msg.sender != empty(address) and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER"
+    assert _recipient != empty(address), "APEX:: CAN ONLY BE A VALID ADDRESS"
     assert _amountIn > 0 and _amountIn <= self.balance, "APEX:: CANNOT SEND 0 AMOUNT"
     
     _apeFee: uint256 = ApeXExchangeV1Router(self.router).getApeFee(_amountIn)
@@ -263,8 +263,8 @@ def safeTransferETH(_recipient: address, _apeFeeFund: address, _amountIn: uint25
 @external
 @nonreentrant('lock')
 def safeTransferERC721NFT(_recipient: address, _tokenId: uint256, _newCurrentPrice: uint256):
-    assert msg.sender != ZERO_ADDRESS and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER"
-    assert _recipient != ZERO_ADDRESS, "APEX:: CAN ONLY BE A VALID ADDRESS"
+    assert msg.sender != empty(address) and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER"
+    assert _recipient != empty(address), "APEX:: CAN ONLY BE A VALID ADDRESS"
 
     successful: bool = self._safeTransferERC721NFT(self, _recipient, _tokenId)
     assert successful, "APEX:: UNVALID TRANSFER"
@@ -277,8 +277,8 @@ def safeTransferERC721NFT(_recipient: address, _tokenId: uint256, _newCurrentPri
 @external
 @nonreentrant('lock')
 def apeAggregatorSafeTransferERC721NFT(_recipient: address, _tokenId: uint256):
-    assert msg.sender != ZERO_ADDRESS and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER"
-    assert _recipient != ZERO_ADDRESS, "APEX:: CAN ONLY BE A VALID ADDRESS"
+    assert msg.sender != empty(address) and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER"
+    assert _recipient != empty(address), "APEX:: CAN ONLY BE A VALID ADDRESS"
 
     successful: bool = self._safeTransferERC721NFT(self, _recipient, _tokenId)
     assert successful, "APEX:: UNVALID TRANSFER"
@@ -291,8 +291,8 @@ def apeAggregatorSafeTransferERC721NFT(_recipient: address, _tokenId: uint256):
 @external
 @nonreentrant('lock')
 def safeBatchTransferERC721NFT(_recipient: address, _tokenIds: DynArray[uint256, MAX_SIZE], _newCurrentPrice: uint256):
-    assert msg.sender != ZERO_ADDRESS and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER" 
-    assert _recipient != ZERO_ADDRESS, "APEX:: CAN ONLY BE A VALID ADDRESS"
+    assert msg.sender != empty(address) and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER" 
+    assert _recipient != empty(address), "APEX:: CAN ONLY BE A VALID ADDRESS"
 
     nftContract: address = self.token0
     bal: uint256 = IERC721Metadata(nftContract).balanceOf(self)
@@ -312,8 +312,8 @@ def safeBatchTransferERC721NFT(_recipient: address, _tokenIds: DynArray[uint256,
 @external
 @nonreentrant('lock')
 def safeTransferERC20(_recipient: address, _amountIn: uint256, _newCurrentPrice: uint256):
-    assert msg.sender != ZERO_ADDRESS and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER" 
-    assert _recipient != ZERO_ADDRESS, "APEX:: CAN ONLY BE A VALID ADDRESS"
+    assert msg.sender != empty(address) and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER" 
+    assert _recipient != empty(address), "APEX:: CAN ONLY BE A VALID ADDRESS"
     assert _amountIn != 0, "APEX:: UNVALID AMOUNT"
 
     apeFee: uint256 = ApeXExchangeV1Router(self.router).getApeFee(_amountIn)
@@ -321,7 +321,7 @@ def safeTransferERC20(_recipient: address, _amountIn: uint256, _newCurrentPrice:
 
     seaRouter: address = self.router
     erc20Token: address = self.token1
-    assert erc20Token != ZERO_ADDRESS, "APEX:: UNVALID TOKEN1 ADDRESS"
+    assert erc20Token != empty(address), "APEX:: UNVALID TOKEN1 ADDRESS"
 
     exactValue: uint256 = _amountIn - apeFee
 
@@ -442,8 +442,8 @@ def apeAggregatorAddLiquidityETH(_newCurrentPrice: uint256) -> bool:
 
 @external
 def apeAggregatorAddLiquidityERC20Token(_amountIn: uint256, _newCurrentPrice: uint256) -> bool:
-    assert msg.sender != ZERO_ADDRESS and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER" 
-    assert self.token1 != ZERO_ADDRESS, "APEX:: UNVALID ERC20 TOKEN"
+    assert msg.sender != empty(address) and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER" 
+    assert self.token1 != empty(address), "APEX:: UNVALID ERC20 TOKEN"
     assert _amountIn != 0, "APEX:: ENTER UNVALID AMOUNT"
 
     transferSucessful: bool = self._safeTransferERC20Token(msg.sender, self, _amountIn)
@@ -457,7 +457,7 @@ def apeAggregatorAddLiquidityERC20Token(_amountIn: uint256, _newCurrentPrice: ui
 
 @external
 def addLiquidityERC721NFT(_tokenId: uint256) -> bool:
-    assert msg.sender != ZERO_ADDRESS and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER" 
+    assert msg.sender != empty(address) and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER" 
 
     nftOwner: address = IERC721Metadata(self.token0).ownerOf(_tokenId)
     assert nftOwner == self.controller, "APEX:: FORK OWNER"
@@ -471,8 +471,8 @@ def addLiquidityERC721NFT(_tokenId: uint256) -> bool:
 
 @external
 def addLiquidityEN(_amountIn: uint256, _tokenId: uint256) -> bool:
-    assert msg.sender != ZERO_ADDRESS and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER" 
-    assert self.token1 != ZERO_ADDRESS, "APEX:: UNVALID ERC20 TOKEN"
+    assert msg.sender != empty(address) and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER" 
+    assert self.token1 != empty(address), "APEX:: UNVALID ERC20 TOKEN"
     assert _amountIn != 0, "APEX:: ENTER UNVALID AMOUNT"
 
     transferSucessful: bool = self._safeTransferERC20Token(msg.sender, self, _amountIn)
@@ -489,8 +489,8 @@ def addLiquidityEN(_amountIn: uint256, _tokenId: uint256) -> bool:
 
 @external
 def addLiquidityERC20Token(_amountIn: uint256) -> bool:
-    assert msg.sender != ZERO_ADDRESS and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER" 
-    assert self.token1 != ZERO_ADDRESS, "APEX:: UNVALID ERC20 TOKEN"
+    assert msg.sender != empty(address) and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER" 
+    assert self.token1 != empty(address), "APEX:: UNVALID ERC20 TOKEN"
     assert _amountIn != 0, "APEX:: ENTER UNVALID AMOUNT"
 
     transferSucessful: bool = self._safeTransferERC20Token(msg.sender, self, _amountIn)
@@ -503,7 +503,7 @@ def addLiquidityERC20Token(_amountIn: uint256) -> bool:
 
 @external
 def removeLiquidity(_amountIn: uint256, _tokenId: uint256) -> bool:
-    assert msg.sender != ZERO_ADDRESS and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER" 
+    assert msg.sender != empty(address) and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER" 
     assert _amountIn <= self.balance, "APEX:: UNVALID AMOUNT P"
 
     removeSuceesful: bool = self._safeTransferERC721NFT(self, self.controller, _tokenId)
@@ -516,7 +516,7 @@ def removeLiquidity(_amountIn: uint256, _tokenId: uint256) -> bool:
 
 @external
 def removeLiquidityEN(_amountIn: uint256, _tokenId: uint256) -> bool:
-    assert msg.sender != ZERO_ADDRESS and msg.sender == self.router, " APEX:: CAN ONLY BE CALLED BY ROUTER" 
+    assert msg.sender != empty(address) and msg.sender == self.router, " APEX:: CAN ONLY BE CALLED BY ROUTER" 
     assert _amountIn <= self.balance, "APEX:: UNVALID AMOUNT"
 
     transferSucessful: bool = self._safeTransferERC20Token(self, self.controller, _amountIn)
@@ -531,7 +531,7 @@ def removeLiquidityEN(_amountIn: uint256, _tokenId: uint256) -> bool:
 
 @external
 def removeLiquidityETH(_amountIn: uint256) -> bool:
-    assert msg.sender != ZERO_ADDRESS and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER" 
+    assert msg.sender != empty(address) and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER" 
     assert _amountIn <= self.balance, "APEX:: UNVALID AMOUNT"
     send(self.controller, _amountIn)
     self.blockTimestampLast = block.timestamp
@@ -542,7 +542,7 @@ def removeLiquidityETH(_amountIn: uint256) -> bool:
 
 @external
 def removeLiquidityERC20(_amountIn: uint256) -> bool:
-    assert msg.sender != ZERO_ADDRESS and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER" 
+    assert msg.sender != empty(address) and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER" 
     assert _amountIn != 0, "APEX:: UNVALID AMOUNT"
     
     transferSucessful: bool = self._safeTransferERC20Token(self, self.controller, _amountIn)
@@ -555,7 +555,7 @@ def removeLiquidityERC20(_amountIn: uint256) -> bool:
 
 @external
 def removeLiquidityERC721NFT(_tokenId: uint256) -> bool:
-    assert msg.sender != ZERO_ADDRESS and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER" 
+    assert msg.sender != empty(address) and msg.sender == self.router, "APEX:: CAN ONLY BE CALLED BY ROUTER" 
 
     removeSuceesful: bool = self._safeTransferERC721NFT(self, self.controller, _tokenId)
     assert removeSuceesful, "APEX:: UNVALID DEPOSIT"
